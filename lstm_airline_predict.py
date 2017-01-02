@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from keras.models import Sequential
+from keras.models import Sequential, load_model
+# noinspection PyUnresolvedReferences
 from keras.layers import LSTM, Dense, Activation
 
 
@@ -11,7 +12,6 @@ def load_data(file_name, sequence_length=10, split=0.8):
     data_all = np.array(df).astype(float)
     scaler = MinMaxScaler()
     data_all = scaler.fit_transform(data_all)  # 把数据缩放到0-1之间
-
     data = []
     for i in range(len(data_all) - sequence_length - 1):
         x = data_all[i: i + sequence_length + 1]  # sequence_length=10 ， 但要把数据集分成每个11个记录
@@ -26,10 +26,10 @@ def load_data(file_name, sequence_length=10, split=0.8):
 
     # 分割训练和测试
     split_boundary = int(reshaped_data.shape[0] * split)
-    train_x = x[: split_boundary]
+    train_x = x[:split_boundary]
     test_x = x[split_boundary:]
 
-    train_y = y[: split_boundary]
+    train_y = y[:split_boundary]
     test_y = y[split_boundary:]
 
     return train_x, train_y, test_x, test_y, scaler
@@ -57,6 +57,8 @@ def train_model(train_x, train_y, test_x, test_y):
     print('test_y -- ' * 5)
     print(test_y)
 
+    model.save('model.h5')
+
     try:
         fig = plt.figure(1)
         plt.plot(predict, 'r:')
@@ -69,10 +71,8 @@ def train_model(train_x, train_y, test_x, test_y):
 
 if __name__ == '__main__':
 
-    train_x, train_y, test_x, test_y, scaler = load_data('international-airline-passengers.csv')
 
-    print('-' * 20)
-    print(test_x)
+    train_x, train_y, test_x, test_y, scaler = load_data('international-airline-passengers.csv')
 
     print(train_x.shape)
     # (106, 10, 1)
@@ -80,15 +80,11 @@ if __name__ == '__main__':
     # 每个训练集 有10行数据
     # 每行数据 有1个维度
 
-    exit()
     train_x = np.reshape(train_x, (train_x.shape[0], train_x.shape[1], 1))
     test_x = np.reshape(test_x, (test_x.shape[0], test_x.shape[1], 1))
 
-    print('-'*20)
-    print(test_x)
-
-
     predict_y, test_y = train_model(train_x, train_y, test_x, test_y)
+
     predict_y = scaler.inverse_transform([[i] for i in predict_y])  # 反变换
 
     test_y = scaler.inverse_transform(test_y)
