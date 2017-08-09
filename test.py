@@ -4,6 +4,6 @@ import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv('test.csv', sep=',')
+df = pd.read_csv('lstm_text.csv', sep=',')
 print(df.head(5))
 
